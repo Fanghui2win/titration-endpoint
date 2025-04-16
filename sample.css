@@ -1,0 +1,267 @@
+/* 基础样式 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f8f9fa;
+}
+
+header {
+  background-color: #4285f4;
+  color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.toolbar button {
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 0.5rem 1rem;
+  margin-left: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.toolbar button:hover {
+  background-color: rgba(255,255,255,0.2);
+}
+
+.toolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  main {
+    flex-direction: row;
+  }
+}
+
+/* 相机容器 */
+.camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 1rem;
+}
+
+#camera-view {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+#roi-overlay {
+  position: absolute;
+  border: 2px dashed #4285f4;
+  pointer-events: none;
+}
+
+#sampling-points-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.sampling-point {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(66, 133, 244, 0.7);
+  transform: translate(-50%, -50%);
+}
+
+/* 分析面板 */
+.analysis-panel {
+  flex: 1;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-left: 0;
+}
+
+@media (min-width: 768px) {
+  .analysis-panel {
+    margin-left: 1rem;
+  }
+}
+
+.titration-info {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.titration-info select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  flex: 1;
+}
+
+.color-analysis {
+  margin-bottom: 1rem;
+}
+
+.hsv-display {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.current-hsv, .reference-hsv {
+  flex: 1;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.match-display, .endpoint-display {
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.match-low {
+  color: #dc3545;
+}
+
+.match-medium {
+  color: #fd7e14;
+}
+
+.match-high {
+  color: #28a745;
+}
+
+.endpoint-not-reached {
+  color: #dc3545;
+}
+
+.endpoint-reached {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.graph-container {
+  height: 200px;
+}
+
+/* 面板和对话框 */
+.panel, .dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  z-index: 1000;
+  max-width: 90%;
+  width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+.settings-group {
+  margin-bottom: 1.5rem;
+}
+
+.settings-group h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #4285f4;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.button-group button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#save-settings, #record-endpoint, #save-calibration {
+  background-color: #4285f4;
+  color: white;
+}
+
+#close-settings, #continue-titration, #cancel-calibration {
+  background-color: #f1f3f4;
+  color: #333;
+}
+
+/* 提示信息 */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0,0,0,0.8);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  z-index: 2000;
+}
+
+/* 终点闪烁效果 */
+@keyframes endpoint-flash {
+  0%, 100% { background-color: #f8f9fa; }
+  50% { background-color: #d4edda; }
+}
+
+.endpoint-flash {
+  animation: endpoint-flash 0.5s ease-in-out 3;
+}

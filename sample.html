@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI辅助滴定终点判断系统</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- PWA相关标记 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4285f4">
+</head>
+<body>
+  <header>
+    <h1>AI辅助滴定终点判断</h1>
+    <div class="toolbar">
+      <button id="settings-button">设置</button>
+      <button id="start-button">开始分析</button>
+      <button id="stop-button" disabled>停止</button>
+    </div>
+  </header>
+  
+  <main>
+    <div class="camera-container">
+      <video id="camera-view" autoplay playsinline></video>
+      <canvas id="processing-canvas" style="display:none;"></canvas>
+      <div id="roi-overlay"></div>
+      <div id="sampling-points-overlay"></div>
+    </div>
+    
+    <div class="analysis-panel">
+      <div class="titration-info">
+        <select id="titration-type">
+          <option value="acid-base">酸碱滴定</option>
+          <option value="redox">氧化还原滴定</option>
+          <option value="complexometric">络合滴定</option>
+          <option value="precipitation">沉淀滴定</option>
+        </select>
+        
+        <select id="indicator-type">
+          <option value="phenolphthalein">酚酞</option>
+          <option value="methyl-orange">甲基橙</option>
+          <option value="bromothymol-blue">溴甲酚绿</option>
+          <!-- 更多指示剂选项 -->
+        </select>
+      </div>
+      
+      <div class="color-analysis">
+        <h2>颜色分析</h2>
+        <div class="hsv-display">
+          <div class="current-hsv">
+            <h3>当前HSV</h3>
+            <p>H: <span id="current-h">0.0°</span></p>
+            <p>S: <span id="current-s">0.0%</span></p>
+            <p>V: <span id="current-v">0.0%</span></p>
+          </div>
+          
+          <div class="reference-hsv">
+            <h3>参考HSV</h3>
+            <p>H: <span id="reference-h">0.0°</span></p>
+            <p>S: <span id="reference-s">0.0%</span></p>
+            <p>V: <span id="reference-v">0.0%</span></p>
+          </div>
+        </div>
+        
+        <div class="match-display">
+          <h3>匹配度</h3>
+          <div id="match-percentage" class="match-low">0.0%</div>
+        </div>
+        
+        <div class="endpoint-display">
+          <h3>终点状态</h3>
+          <div id="endpoint-indicator" class="endpoint-not-reached">未达到终点</div>
+        </div>
+      </div>
+      
+      <div class="graph-container">
+        <h2>实时趋势</h2>
+        <canvas id="real-time-graph"></canvas>
+      </div>
+    </div>
+  </main>
+  
+  <!-- 设置面板 -->
+  <div id="settings-panel" class="panel hidden">
+    <h2>设置</h2>
+    <div class="settings-group">
+      <h3>ROI设置</h3>
+      <label>
+        ROI大小
+        <input type="range" id="roi-size" min="50" max="300" step="10" value="200">
+      </label>
+    </div>
+    
+    <div class="settings-group">
+      <h3>图像增强</h3>
+      <label>
+        对比度
+        <input type="range" id="contrast-factor" min="0.5" max="2" step="0.1" value="1.2">
+      </label>
+      <label>
+        亮度
+        <input type="range" id="brightness" min="-50" max="50" step="5" value="0">
+      </label>
+    </div>
+    
+    <div class="settings-group">
+      <h3>采样设置</h3>
+      <label>
+        采样点数量
+        <input type="range" id="sampling-points" min="3" max="9" step="2" value="5">
+      </label>
+      <label>
+        采样区域大小
+        <input type="range" id="sampling-area-size" min="3" max="11" step="2" value="5">
+      </label>
+    </div>
+    
+    <div class="settings-group">
+      <h3>通知设置</h3>
+      <label>
+        <input type="checkbox" id="sound-notification" checked>
+        声音提示
+      </label>
+      <label>
+        <input type="checkbox" id="vibration-notification" checked>
+        震动提示
+      </label>
+      <label>
+        <input type="checkbox" id="dialog-notification" checked>
+        对话框提示
+      </label>
+    </div>
+    
+    <div class="settings-group">
+      <h3>颜色校准</h3>
+      <label>
+        <input type="checkbox" id="color-card-enabled">
+        启用色卡校正
+      </label>
+      <button id="calibrate-button">校准色卡</button>
+    </div>
+    
+    <div class="button-group">
+      <button id="save-settings">保存设置</button>
+      <button id="close-settings">关闭</button>
+    </div>
+  </div>
+  
+  <!-- 校准对话框 -->
+  <div id="calibration-dialog" class="dialog hidden">
+    <h2>色卡校准</h2>
+    <p>请按照以下步骤校准色卡：</p>
+    <ol>
+      <li>将标准色卡放在标准光源下</li>
+      <li>点击"捕获参考值"</li>
+      <li>将相同色卡放在当前实验环境中</li>
+      <li>点击"捕获测量值"</li>
+      <li>点击"保存校准"完成</li>
+    </ol>
+    
+    <div class="hsv-display">
+      <p>参考HSV: <span id="reference-hsv-display">未捕获</span></p>
+      <p>测量HSV: <span id="measured-hsv-display">未捕获</span></p>
+    </div>
+    
+    <div class="button-group">
+      <button id="capture-reference">捕获参考值</button>
+      <button id="capture-measured">捕获测量值</button>
+      <button id="save-calibration">保存校准</button>
+      <button id="cancel-calibration">取消</button>
+    </div>
+  </div>
+  
+  <!-- 终点提示对话框 -->
+  <div id="endpoint-dialog" class="dialog hidden">
+    <h2>滴定终点!</h2>
+    <p>系统检测到滴定已达到终点。</p>
+    <div class="button-group">
+      <button id="record-endpoint">记录终点</button>
+      <button id="continue-titration">继续滴定</button>
+    </div>
+  </div>
+  
+  <!-- 消息提示 -->
+  <div id="message-toast" class="toast hidden"></div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="app.js"></script>
+  <script src="sw-register.js"></script>
+</body>
+</html>
